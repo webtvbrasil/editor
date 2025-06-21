@@ -3,181 +3,310 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Editor Avançado com Background</title>
+<title>Editor Dark Mode Avançado</title>
 <style>
+/* Estilos gerais da página de preview */
 body {
-    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+    background: #111;
+    color: white;
+    font-family: Arial, sans-serif;
 }
-
+/* Painel lateral */
 #editor-panel {
     position: fixed;
     top: 0;
     right: 0;
     width: 320px;
     height: 100%;
-    background: #f5f5f5;
-    overflow-y: scroll;
+    background: #333;
+    overflow-y: auto;
     padding: 10px;
-    border-left: 2px solid #ccc;
+    border-left: 2px solid #000;
     z-index: 9999;
+    transition: right 0.3s;
 }
-
-#editor-panel label {
+#editor-panel.hidden {
+    right: -330px;
+}
+/* Botões de fechar/abrir painel */
+#toggle-btn {
+    position: fixed;
+    top: 10px;
+    right: 330px;
+    background: #c0392b;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    cursor: pointer;
     font-weight: bold;
-    margin-top: 8px;
+    border-radius: 50%;
+    z-index: 10000;
+}
+#open-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+    z-index: 10000;
+}
+/* Estilo dos labels e inputs no painel */
+#editor-panel h3 {
+    margin-top: 0;
+    color: white;
+}
+#editor-panel label {
     display: block;
+    margin-top: 12px;
+    font-weight: bold;
+    color: white;
 }
-
-#editor-panel input, #editor-panel textarea, #editor-panel select {
+#editor-panel input[type="text"],
+#editor-panel input[type="number"],
+#editor-panel input[type="color"],
+#editor-panel select,
+#editor-panel textarea {
     width: 100%;
-    margin-bottom: 8px;
-    padding: 5px;
+    margin-top: 4px;
+    padding: 6px;
+    background: #000;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 4px;
+    box-sizing: border-box;
 }
-
+/* Preview da página gerada */
 #page-preview {
     margin-right: 330px;
     padding: 20px;
+    transition: margin-right 0.3s;
 }
-
+/* Área de código */
 #html-output {
-    background: #222;
-    color: #0f0;
+    background: #2e2e2e;
+    color: #ddd;
     padding: 10px;
+    margin-top: 20px;
+    font-family: monospace;
+    font-size: 12px;
+    border: 2px solid black;
+    border-radius: 8px;
+    white-space: pre-wrap;
     overflow-x: auto;
     max-height: 400px;
-    white-space: pre-wrap;
-    margin-top: 20px;
-    font-size: 12px;
+    /* ocultar scrollbar em Firefox */
+    scrollbar-width: none;
 }
-
-button {
-    background: #28a745;
+#html-output::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+/* Syntax highlight simples */
+.syntax-html .tag { color: #e06c75; }      /* tags HTML */
+.syntax-html .attr { color: #d19a66; }     /* nomes de atributos */
+.syntax-html .value { color: #98c379; }    /* valores em aspas */
+/* Botões dentro do painel */
+#editor-panel button.copy-btn {
+    background: #388e3c;
     color: white;
     padding: 8px 12px;
     border: none;
     cursor: pointer;
-    margin-top: 10px;
+    border-radius: 4px;
+    margin-top: 12px;
+}
+/* Para organizar seções no painel */
+.section-separator {
+    height: 1px;
+    background: #444;
+    margin: 16px 0;
 }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Open+Sans&family=Inter&family=Lato&family=Roboto&display=swap" rel="stylesheet">
 </head>
 <body>
 
+<!-- Botões de fechar/abrir -->
+<button id="toggle-btn" title="Fechar editor">❌</button>
+<button id="open-btn" title="Abrir editor">⚪</button>
+
+<!-- Painel de edição -->
 <div id="editor-panel">
     <h3>Editor Avançado</h3>
 
-    <label>URL da Imagem de Fundo:</label>
+    <!-- Imagem de fundo -->
+    <label for="background-url">URL da Imagem de Fundo:</label>
     <input type="text" id="background-url" value="https://lifestylebrazil.com.br/wp-content/uploads/2019/02/18390-oe-tang-1187_A-1600x1067.jpg">
 
-    <label>Headline:</label>
+    <div class="section-separator"></div>
+
+    <!-- Headline -->
+    <label for="headline">Headline:</label>
     <input type="text" id="headline" value="Holding NÃO Funciona Mais">
-    <label>Fonte Headline:</label>
+    <label for="headline-font">Fonte Headline:</label>
     <select id="headline-font">
         <option value="'Montserrat', sans-serif">Montserrat</option>
         <option value="'Lato', sans-serif">Lato</option>
         <option value="'Inter', sans-serif">Inter</option>
     </select>
-    <label>Tamanho Headline (px):</label>
-    <input type="number" id="headline-size" value="40">
+    <label for="headline-size">Tamanho Headline (px):</label>
+    <input type="number" id="headline-size" value="40" min="10">
 
-    <label>Sub-headline:</label>
-    <textarea id="subheadline">Descubra o passo a passo...</textarea>
-    <label>Fonte Sub-headline:</label>
+    <div class="section-separator"></div>
+
+    <!-- Sub-headline -->
+    <label for="subheadline">Sub-headline:</label>
+    <textarea id="subheadline" rows="2">Descubra o passo a passo...</textarea>
+    <label for="subheadline-font">Fonte Sub-headline:</label>
     <select id="subheadline-font">
         <option value="'Montserrat', sans-serif">Montserrat</option>
         <option value="'Lato', sans-serif">Lato</option>
         <option value="'Inter', sans-serif">Inter</option>
     </select>
-    <label>Tamanho Sub-headline (px):</label>
-    <input type="number" id="subheadline-size" value="20">
+    <label for="subheadline-size">Tamanho Sub-headline (px):</label>
+    <input type="number" id="subheadline-size" value="20" min="10">
 
-    <label>URL do Vídeo (YouTube Embed):</label>
+    <div class="section-separator"></div>
+
+    <!-- Vídeo -->
+    <label for="video-url">URL do Vídeo (YouTube Embed, ex: https://www.youtube.com/embed/ID):</label>
     <input type="text" id="video-url" value="https://www.youtube.com/embed/lq3TRJmJHDg">
-    <label>Largura Máxima do Vídeo (px):</label>
-    <input type="number" id="video-max-width" value="900">
-    <label>Proporção do Vídeo:</label>
+    <label for="video-max-width">Largura Máxima do Vídeo (px):</label>
+    <input type="number" id="video-max-width" value="900" min="100">
+    <label for="video-ratio">Proporção do Vídeo (ex: 16 / 9):</label>
     <input type="text" id="video-ratio" value="16 / 9">
 
-    <label>Texto do Botão:</label>
+    <div class="section-separator"></div>
+
+    <!-- Botão -->
+    <label for="button-text">Texto do Botão:</label>
     <input type="text" id="button-text" value="Clique para ouvir">
-    <label>Cor do Botão:</label>
+    <label for="button-color">Cor do Botão:</label>
     <input type="color" id="button-color" value="#28a745">
-    <label>Radius do Botão (px):</label>
-    <input type="number" id="button-radius" value="6">
-    <label>Fonte Botão:</label>
+    <label for="button-radius">Radius do Botão (px):</label>
+    <input type="number" id="button-radius" value="6" min="0">
+    <label for="button-font">Fonte Botão:</label>
     <select id="button-font">
         <option value="'Montserrat', sans-serif">Montserrat</option>
         <option value="'Lato', sans-serif">Lato</option>
         <option value="'Inter', sans-serif">Inter</option>
     </select>
-    <label>Tamanho Fonte Botão (px):</label>
-    <input type="number" id="button-font-size" value="16">
+    <label for="button-font-size">Tamanho Fonte Botão (px):</label>
+    <input type="number" id="button-font-size" value="16" min="8">
 
-    <hr>
+    <div class="section-separator"></div>
 
-    <label>Texto do Corpo Amarelo:</label>
-    <textarea id="body-text">Aqui vai o conteúdo do corpo...</textarea>
-    <label>Cor de Fundo Corpo:</label>
+    <!-- Corpo amarelo -->
+    <label for="body-text">Texto do Corpo Amarelo:</label>
+    <textarea id="body-text" rows="4">Aqui vai o conteúdo do corpo...</textarea>
+    <label for="body-bg">Cor de Fundo Corpo:</label>
     <input type="color" id="body-bg" value="#FFFF00">
-    <label>Fonte Corpo:</label>
+    <label for="body-font">Fonte Corpo:</label>
     <select id="body-font">
         <option value="'Open Sans', sans-serif">Open Sans</option>
         <option value="'Roboto', sans-serif">Roboto</option>
         <option value="'Lato', sans-serif">Lato</option>
     </select>
-    <label>Tamanho Fonte Corpo (px):</label>
-    <input type="number" id="body-font-size" value="12">
-    <label>Radius Corpo (px):</label>
-    <input type="number" id="body-radius" value="25">
+    <label for="body-font-size">Tamanho Fonte Corpo (px):</label>
+    <input type="number" id="body-font-size" value="12" min="8">
+    <label for="body-radius">Radius Corpo (px):</label>
+    <input type="number" id="body-radius" value="25" min="0">
 
-    <button onclick="copyCode()">Copiar HTML</button>
+    <!-- Botão copiar -->
+    <button class="copy-btn" onclick="copyCode()">Copiar HTML</button>
 </div>
 
+<!-- Preview e área de código gerado -->
 <div id="page-preview">
     <div id="page-content"></div>
-    <h4>Código HTML Gerado:</h4>
-    <pre id="html-output"></pre>
+    <h4 style="color:white; margin-top: 30px;">Código HTML Gerado:</h4>
+    <pre id="html-output" class="syntax-html"></pre>
 </div>
 
 <script>
-function updatePage() {
-    const bgUrl = document.getElementById('background-url').value;
+// Referências de elementos
+const editorPanel = document.getElementById('editor-panel');
+const toggleBtn = document.getElementById('toggle-btn');
+const openBtn = document.getElementById('open-btn');
+const pagePreview = document.getElementById('page-preview');
 
-    const headline = document.getElementById('headline').value;
+// Função para mostrar/ocultar painel
+toggleBtn.addEventListener('click', () => {
+    editorPanel.classList.add('hidden');
+    openBtn.style.display = 'block';
+    pagePreview.style.marginRight = '20px';
+});
+openBtn.addEventListener('click', () => {
+    editorPanel.classList.remove('hidden');
+    openBtn.style.display = 'none';
+    pagePreview.style.marginRight = '330px';
+});
+
+// Função de syntax highlight simples
+function syntaxHighlight(html) {
+    // Escapa <, > e &
+    let esc = html.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;');
+    // Realça tags e atributos e valores
+    // Marca <tag ou </tag
+    esc = esc.replace(/(&lt;\/?)([a-zA-Z0-9\-]+)/g, (m, p1, p2) => {
+        return p1 + '<span class="tag">' + p2 + '</span>';
+    });
+    // Marca atributos e seus valores: attr="value"
+    esc = esc.replace(/([a-zA-Z\-:]+)(=)(&quot;[^&]*&quot;)/g, (m, p1, p2, p3) => {
+        return '<span class="attr">' + p1 + '</span>' + p2 + '<span class="value">' + p3 + '</span>';
+    });
+    return esc;
+}
+
+// Função que gera o HTML e atualiza preview e área de código
+function updatePage() {
+    // Lê valores dos campos
+    const bgUrl = document.getElementById('background-url').value.trim();
+
+    const headline = document.getElementById('headline').value.trim();
     const headlineFont = document.getElementById('headline-font').value;
     const headlineSize = document.getElementById('headline-size').value;
 
-    const subheadline = document.getElementById('subheadline').value;
+    const subheadline = document.getElementById('subheadline').value.trim();
     const subheadlineFont = document.getElementById('subheadline-font').value;
     const subheadlineSize = document.getElementById('subheadline-size').value;
 
-    const videoUrl = document.getElementById('video-url').value;
+    const videoUrl = document.getElementById('video-url').value.trim();
     const videoMaxWidth = document.getElementById('video-max-width').value;
-    const videoRatio = document.getElementById('video-ratio').value;
+    const videoRatio = document.getElementById('video-ratio').value.trim();
 
-    const buttonText = document.getElementById('button-text').value;
+    const buttonText = document.getElementById('button-text').value.trim();
     const buttonColor = document.getElementById('button-color').value;
     const buttonRadius = document.getElementById('button-radius').value;
     const buttonFont = document.getElementById('button-font').value;
     const buttonFontSize = document.getElementById('button-font-size').value;
 
-    const bodyText = document.getElementById('body-text').value;
+    const bodyText = document.getElementById('body-text').value.trim();
     const bodyBg = document.getElementById('body-bg').value;
     const bodyFont = document.getElementById('body-font').value;
     const bodyFontSize = document.getElementById('body-font-size').value;
     const bodyRadius = document.getElementById('body-radius').value;
 
-    const html = `
-<!DOCTYPE html>
+    // Gera o HTML completo como string
+    const html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${headline}</title>
+<title>${headline.replace(/"/g, '&quot;')}</title>
 <style>
 body {
+    margin: 0;
+    padding: 0;
     font-family: 'Montserrat', sans-serif;
     text-align: center;
     color: white;
@@ -187,20 +316,26 @@ body {
 h1 {
     font-family: ${headlineFont};
     font-size: ${headlineSize}px;
+    margin: 40px 0 10px 0;
 }
 p.sub {
     font-family: ${subheadlineFont};
     font-size: ${subheadlineSize}px;
+    margin: 0 auto 10px auto;
+    max-width: 700px;
 }
 .video-container {
     max-width: ${videoMaxWidth}px;
     margin: 10px auto;
     aspect-ratio: ${videoRatio};
     position: relative;
+    border-radius: 8px;
+    overflow: hidden;
 }
 .video-container iframe {
     width: 100%;
     height: 100%;
+    border: none;
 }
 .btn {
     display: inline-block;
@@ -212,6 +347,11 @@ p.sub {
     font-size: ${buttonFontSize}px;
     text-decoration: none;
     font-weight: bold;
+    margin-top: 8px;
+    transition: background 0.3s;
+}
+.btn:hover {
+    filter: brightness(0.9);
 }
 .yellow-box {
     background: ${bodyBg};
@@ -224,6 +364,23 @@ p.sub {
     border: 5px solid black;
     border-radius: ${bodyRadius}px;
     text-align: left;
+    box-sizing: border-box;
+}
+/* Responsivo */
+@media (max-width: 768px) {
+    h1 {
+        font-size: ${Math.max(16, Math.round(headlineSize * 0.7))}px;
+    }
+    p.sub {
+        font-size: ${Math.max(12, Math.round(subheadlineSize * 0.7))}px;
+        margin: 0 10px 10px 10px;
+    }
+    .video-container {
+        max-width: 415px;
+    }
+    .yellow-box {
+        margin: 20px 10px;
+    }
 }
 </style>
 </head>
@@ -231,33 +388,60 @@ p.sub {
 <h1>${headline}</h1>
 <p class="sub">${subheadline}</p>
 <div class="video-container">
-<iframe src="${videoUrl}" frameborder="0" allowfullscreen></iframe>
+    <iframe src="${videoUrl}" allowfullscreen></iframe>
 </div>
-<a href="#" class="btn">${buttonText}</a>
+<a href="${videoUrl.replace('/embed/', '/watch?v=')}" target="_blank" class="btn">${buttonText}</a>
 <div class="yellow-box">${bodyText}</div>
 </body>
 </html>`;
 
-    document.getElementById('page-content').innerHTML = html;
-    document.getElementById('html-output').textContent = html;
+    // Atualiza preview: insere dentro de um iframe? Aqui simplificamos inserindo em innerHTML,
+    // mas para mostrar corretamente estilos, geramos via srcdoc de iframe. Vamos usar iframe para isolamento.
+    let previewContainer = document.getElementById('page-content');
+    // Se já existir iframe, reaproveita; senão, cria.
+    let iframe = previewContainer.querySelector('iframe.editor-preview-iframe');
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.className = 'editor-preview-iframe';
+        iframe.style.width = '100%';
+        iframe.style.minHeight = '500px';
+        iframe.style.border = '1px solid #444';
+        iframe.style.background = '#000';
+        previewContainer.innerHTML = '';
+        previewContainer.appendChild(iframe);
+    }
+    // Define srcdoc
+    iframe.srcdoc = html;
 
-    // Atualizar fundo da página de preview ao vivo
-    document.body.style.backgroundImage = `url('${bgUrl}')`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center center';
-    document.body.style.backgroundAttachment = 'fixed';
+    // Atualiza área de código com highlight
+    const out = document.getElementById('html-output');
+    out.innerHTML = syntaxHighlight(html);
 }
 
-document.querySelectorAll('#editor-panel input, #editor-panel textarea, #editor-panel select').forEach(el => {
-    el.addEventListener('input', updatePage);
+// Associa evento input a todos os campos
+const fields = [
+    'background-url',
+    'headline','headline-font','headline-size',
+    'subheadline','subheadline-font','subheadline-size',
+    'video-url','video-max-width','video-ratio',
+    'button-text','button-color','button-radius','button-font','button-font-size',
+    'body-text','body-bg','body-font','body-font-size','body-radius'
+];
+fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('input', updatePage);
+    }
 });
 
+// Função de copiar código
 function copyCode() {
     const code = document.getElementById('html-output').textContent;
     navigator.clipboard.writeText(code);
     alert('HTML copiado com sucesso!');
 }
 
+// Inicializa
 updatePage();
 </script>
 
