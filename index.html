@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Editor Dark Mode Avançado</title>
 <style>
-/* Estilos gerais da página de preview */
+/* ===========================
+   Estilos gerais da página de preview
+   =========================== */
 body {
     margin: 0;
     padding: 0;
@@ -13,7 +15,9 @@ body {
     color: white;
     font-family: Arial, sans-serif;
 }
-/* Painel lateral */
+/* ===========================
+   Painel lateral
+   =========================== */
 #editor-panel {
     position: fixed;
     top: 0;
@@ -30,35 +34,37 @@ body {
 #editor-panel.hidden {
     right: -330px;
 }
-/* Botões de fechar/abrir painel */
-#toggle-btn {
-    position: fixed;
-    top: 10px;
-    right: 330px;
-    background: #c0392b;
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    cursor: pointer;
-    font-weight: bold;
-    border-radius: 50%;
-    z-index: 10000;
-}
-#open-btn {
+/* ===========================
+   Botões de fechar/abrir painel
+   =========================== */
+#toggle-btn, #open-btn {
     position: fixed;
     top: 20px;
     right: 20px;
-    width: 40px;
-    height: 40px;
-    background: #27ae60;
+    width: 36px;
+    height: 36px;
+    background: #c0392b; /* padrão ❌ vermelho */
     color: white;
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    display: none;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 10000;
+    transition: opacity 0.2s;
 }
-/* Estilo dos labels e inputs no painel */
+#open-btn {
+    background: #27ae60; /* cor da bola quando aparecer */
+}
+#open-btn.hidden, #toggle-btn.hidden {
+    display: none;
+}
+/* ===========================
+   Estilo dos labels e inputs no painel
+   =========================== */
 #editor-panel h3 {
     margin-top: 0;
     color: white;
@@ -82,60 +88,83 @@ body {
     border: 1px solid #555;
     border-radius: 4px;
     box-sizing: border-box;
+    font-family: inherit;
 }
-/* Preview da página gerada */
+/* Ajusta textarea do painel (por exemplo subheadline e body-text) */
+#editor-panel textarea {
+    resize: vertical;
+}
+/* ===========================
+   Preview da página gerada
+   =========================== */
 #page-preview {
     margin-right: 330px;
     padding: 20px;
     transition: margin-right 0.3s;
 }
-/* Área de código */
+/* ===========================
+   Área de código (textarea)
+   =========================== */
+#code-container {
+    margin-top: 20px;
+}
 #html-output {
+    width: calc(100% - 12px); /* deixar pequeno padding interno */
+    height: 300px;
     background: #2e2e2e;
     color: #ddd;
-    padding: 10px;
-    margin-top: 20px;
+    padding: 6px;
     font-family: monospace;
     font-size: 12px;
     border: 2px solid black;
     border-radius: 8px;
+    box-sizing: border-box;
+    resize: vertical;
+    overflow: auto;
     white-space: pre-wrap;
-    overflow-x: auto;
-    max-height: 400px;
-    /* ocultar scrollbar em Firefox */
+    /* Ocultar scrollbar em Firefox */
     scrollbar-width: none;
 }
 #html-output::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
+    display: none; /* Chrome/Safari/Edge */
 }
-/* Syntax highlight simples */
-.syntax-html .tag { color: #e06c75; }      /* tags HTML */
-.syntax-html .attr { color: #d19a66; }     /* nomes de atributos */
-.syntax-html .value { color: #98c379; }    /* valores em aspas */
-/* Botões dentro do painel */
-#editor-panel button.copy-btn {
-    background: #388e3c;
+/* ===========================
+   Botão Copiar abaixo do textarea
+   =========================== */
+#copy-textarea-btn {
+    margin-top: 6px;
+    background: #28a745;
     color: white;
     padding: 8px 12px;
     border: none;
     cursor: pointer;
     border-radius: 4px;
-    margin-top: 12px;
+    font-size: 14px;
 }
-/* Para organizar seções no painel */
+/* ===========================
+   Para organizar seções no painel
+   =========================== */
 .section-separator {
     height: 1px;
     background: #444;
     margin: 16px 0;
 }
+/* ===========================
+   Link de fontes Google (já incluído no <head>)
+   =========================== */
+/* O resto: estilos do preview gerado ficam inline no iframe */
+/* ===========================
+   Responsividade para preview
+   =========================== */
+/* O iframe de preview cuida do CSS responsivo interno */
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Open+Sans&family=Inter&family=Lato&family=Roboto&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<!-- Botões de fechar/abrir -->
+<!-- Botões de fechar/abrir (mesma posição top/right) -->
 <button id="toggle-btn" title="Fechar editor">❌</button>
-<button id="open-btn" title="Abrir editor">⚪</button>
+<button id="open-btn" title="Abrir editor" class="hidden">⚪</button>
 
 <!-- Painel de edição -->
 <div id="editor-panel">
@@ -219,15 +248,19 @@ body {
     <label for="body-radius">Radius Corpo (px):</label>
     <input type="number" id="body-radius" value="25" min="0">
 
-    <!-- Botão copiar -->
-    <button class="copy-btn" onclick="copyCode()">Copiar HTML</button>
+    <div class="section-separator"></div>
+
+    <!-- Botão copiar: este é apenas para copiar o HTML gerado -->
+    <button id="copy-textarea-btn">Copiar código</button>
 </div>
 
 <!-- Preview e área de código gerado -->
 <div id="page-preview">
     <div id="page-content"></div>
     <h4 style="color:white; margin-top: 30px;">Código HTML Gerado:</h4>
-    <pre id="html-output" class="syntax-html"></pre>
+    <div id="code-container">
+        <textarea id="html-output" readonly></textarea>
+    </div>
 </div>
 
 <script>
@@ -236,38 +269,50 @@ const editorPanel = document.getElementById('editor-panel');
 const toggleBtn = document.getElementById('toggle-btn');
 const openBtn = document.getElementById('open-btn');
 const pagePreview = document.getElementById('page-preview');
+const textareaOutput = document.getElementById('html-output');
+const copyTextareaBtn = document.getElementById('copy-textarea-btn');
 
-// Função para mostrar/ocultar painel
+// Mostrar / Ocultar Painel
 toggleBtn.addEventListener('click', () => {
     editorPanel.classList.add('hidden');
-    openBtn.style.display = 'block';
+    toggleBtn.classList.add('hidden');
+    openBtn.classList.remove('hidden');
+    // ajustar margem do preview quando painel fechado
     pagePreview.style.marginRight = '20px';
 });
 openBtn.addEventListener('click', () => {
     editorPanel.classList.remove('hidden');
-    openBtn.style.display = 'none';
+    toggleBtn.classList.remove('hidden');
+    openBtn.classList.add('hidden');
     pagePreview.style.marginRight = '330px';
 });
 
-// Função de syntax highlight simples
-function syntaxHighlight(html) {
-    // Escapa <, > e &
-    let esc = html.replace(/&/g, '&amp;')
-                  .replace(/</g, '&lt;')
-                  .replace(/>/g, '&gt;');
-    // Realça tags e atributos e valores
-    // Marca <tag ou </tag
-    esc = esc.replace(/(&lt;\/?)([a-zA-Z0-9\-]+)/g, (m, p1, p2) => {
-        return p1 + '<span class="tag">' + p2 + '</span>';
-    });
-    // Marca atributos e seus valores: attr="value"
-    esc = esc.replace(/([a-zA-Z\-:]+)(=)(&quot;[^&]*&quot;)/g, (m, p1, p2, p3) => {
-        return '<span class="attr">' + p1 + '</span>' + p2 + '<span class="value">' + p3 + '</span>';
-    });
-    return esc;
-}
+// Auto-select ao focar no textarea de código
+textareaOutput.addEventListener('focus', () => {
+    textareaOutput.select();
+});
+// Também ao clicar no textarea, seleciona tudo
+textareaOutput.addEventListener('click', () => {
+    textareaOutput.select();
+});
 
-// Função que gera o HTML e atualiza preview e área de código
+// Botão verde "Copiar código" que seleciona e copia
+copyTextareaBtn.addEventListener('click', () => {
+    textareaOutput.select();
+    try {
+        document.execCommand('copy');
+    } catch (err) {
+        // fallback moderno
+        navigator.clipboard.writeText(textareaOutput.value).catch(() => {});
+    }
+    // Mensagem opcional
+    alert('Código copiado para a área de transferência!');
+});
+
+// Função de syntax highlight não mais necessária para o textarea, pois mostramos o texto puro.
+// Mas mantemos função de geração do HTML.
+
+// Função que gera o HTML e atualiza preview e textarea
 function updatePage() {
     // Lê valores dos campos
     const bgUrl = document.getElementById('background-url').value.trim();
@@ -297,12 +342,18 @@ function updatePage() {
     const bodyRadius = document.getElementById('body-radius').value;
 
     // Gera o HTML completo como string
+    const escapedTitle = headline.replace(/"/g, '&quot;');
+    const escapedHeadline = headline.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const escapedSub = subheadline.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // Para o body-text, permitir quebras de linha; converter para <br> ou manter texto simples? Vamos manter simples:
+    const escapedBodyText = bodyText.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+
     const html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${headline.replace(/"/g, '&quot;')}</title>
+<title>${escapedTitle}</title>
 <style>
 body {
     margin: 0;
@@ -385,20 +436,18 @@ p.sub {
 </style>
 </head>
 <body>
-<h1>${headline}</h1>
-<p class="sub">${subheadline}</p>
+<h1>${escapedHeadline}</h1>
+<p class="sub">${escapedSub}</p>
 <div class="video-container">
     <iframe src="${videoUrl}" allowfullscreen></iframe>
 </div>
 <a href="${videoUrl.replace('/embed/', '/watch?v=')}" target="_blank" class="btn">${buttonText}</a>
-<div class="yellow-box">${bodyText}</div>
+<div class="yellow-box">${escapedBodyText}</div>
 </body>
 </html>`;
 
-    // Atualiza preview: insere dentro de um iframe? Aqui simplificamos inserindo em innerHTML,
-    // mas para mostrar corretamente estilos, geramos via srcdoc de iframe. Vamos usar iframe para isolamento.
+    // Atualiza preview: usar iframe para isolar estilos
     let previewContainer = document.getElementById('page-content');
-    // Se já existir iframe, reaproveita; senão, cria.
     let iframe = previewContainer.querySelector('iframe.editor-preview-iframe');
     if (!iframe) {
         iframe = document.createElement('iframe');
@@ -410,15 +459,13 @@ p.sub {
         previewContainer.innerHTML = '';
         previewContainer.appendChild(iframe);
     }
-    // Define srcdoc
     iframe.srcdoc = html;
 
-    // Atualiza área de código com highlight
-    const out = document.getElementById('html-output');
-    out.innerHTML = syntaxHighlight(html);
+    // Atualiza textarea com o código gerado
+    textareaOutput.value = html;
 }
 
-// Associa evento input a todos os campos
+// Lista de campos para evento input
 const fields = [
     'background-url',
     'headline','headline-font','headline-size',
@@ -434,14 +481,7 @@ fields.forEach(id => {
     }
 });
 
-// Função de copiar código
-function copyCode() {
-    const code = document.getElementById('html-output').textContent;
-    navigator.clipboard.writeText(code);
-    alert('HTML copiado com sucesso!');
-}
-
-// Inicializa
+// Inicializa ao carregar
 updatePage();
 </script>
 
