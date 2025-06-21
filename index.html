@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor Avançado com Background</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+#editor-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 320px;
+    height: 100%;
+    background: #f5f5f5;
+    overflow-y: scroll;
+    padding: 10px;
+    border-left: 2px solid #ccc;
+    z-index: 9999;
+}
+
+#editor-panel label {
+    font-weight: bold;
+    margin-top: 8px;
+    display: block;
+}
+
+#editor-panel input, #editor-panel textarea, #editor-panel select {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 5px;
+}
+
+#page-preview {
+    margin-right: 330px;
+    padding: 20px;
+}
+
+#html-output {
+    background: #222;
+    color: #0f0;
+    padding: 10px;
+    overflow-x: auto;
+    max-height: 400px;
+    white-space: pre-wrap;
+    margin-top: 20px;
+    font-size: 12px;
+}
+
+button {
+    background: #28a745;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Open+Sans&family=Inter&family=Lato&family=Roboto&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="editor-panel">
+    <h3>Editor Avançado</h3>
+
+    <label>URL da Imagem de Fundo:</label>
+    <input type="text" id="background-url" value="https://lifestylebrazil.com.br/wp-content/uploads/2019/02/18390-oe-tang-1187_A-1600x1067.jpg">
+
+    <label>Headline:</label>
+    <input type="text" id="headline" value="Holding NÃO Funciona Mais">
+    <label>Fonte Headline:</label>
+    <select id="headline-font">
+        <option value="'Montserrat', sans-serif">Montserrat</option>
+        <option value="'Lato', sans-serif">Lato</option>
+        <option value="'Inter', sans-serif">Inter</option>
+    </select>
+    <label>Tamanho Headline (px):</label>
+    <input type="number" id="headline-size" value="40">
+
+    <label>Sub-headline:</label>
+    <textarea id="subheadline">Descubra o passo a passo...</textarea>
+    <label>Fonte Sub-headline:</label>
+    <select id="subheadline-font">
+        <option value="'Montserrat', sans-serif">Montserrat</option>
+        <option value="'Lato', sans-serif">Lato</option>
+        <option value="'Inter', sans-serif">Inter</option>
+    </select>
+    <label>Tamanho Sub-headline (px):</label>
+    <input type="number" id="subheadline-size" value="20">
+
+    <label>URL do Vídeo (YouTube Embed):</label>
+    <input type="text" id="video-url" value="https://www.youtube.com/embed/lq3TRJmJHDg">
+    <label>Largura Máxima do Vídeo (px):</label>
+    <input type="number" id="video-max-width" value="900">
+    <label>Proporção do Vídeo:</label>
+    <input type="text" id="video-ratio" value="16 / 9">
+
+    <label>Texto do Botão:</label>
+    <input type="text" id="button-text" value="Clique para ouvir">
+    <label>Cor do Botão:</label>
+    <input type="color" id="button-color" value="#28a745">
+    <label>Radius do Botão (px):</label>
+    <input type="number" id="button-radius" value="6">
+    <label>Fonte Botão:</label>
+    <select id="button-font">
+        <option value="'Montserrat', sans-serif">Montserrat</option>
+        <option value="'Lato', sans-serif">Lato</option>
+        <option value="'Inter', sans-serif">Inter</option>
+    </select>
+    <label>Tamanho Fonte Botão (px):</label>
+    <input type="number" id="button-font-size" value="16">
+
+    <hr>
+
+    <label>Texto do Corpo Amarelo:</label>
+    <textarea id="body-text">Aqui vai o conteúdo do corpo...</textarea>
+    <label>Cor de Fundo Corpo:</label>
+    <input type="color" id="body-bg" value="#FFFF00">
+    <label>Fonte Corpo:</label>
+    <select id="body-font">
+        <option value="'Open Sans', sans-serif">Open Sans</option>
+        <option value="'Roboto', sans-serif">Roboto</option>
+        <option value="'Lato', sans-serif">Lato</option>
+    </select>
+    <label>Tamanho Fonte Corpo (px):</label>
+    <input type="number" id="body-font-size" value="12">
+    <label>Radius Corpo (px):</label>
+    <input type="number" id="body-radius" value="25">
+
+    <button onclick="copyCode()">Copiar HTML</button>
+</div>
+
+<div id="page-preview">
+    <div id="page-content"></div>
+    <h4>Código HTML Gerado:</h4>
+    <pre id="html-output"></pre>
+</div>
+
+<script>
+function updatePage() {
+    const bgUrl = document.getElementById('background-url').value;
+
+    const headline = document.getElementById('headline').value;
+    const headlineFont = document.getElementById('headline-font').value;
+    const headlineSize = document.getElementById('headline-size').value;
+
+    const subheadline = document.getElementById('subheadline').value;
+    const subheadlineFont = document.getElementById('subheadline-font').value;
+    const subheadlineSize = document.getElementById('subheadline-size').value;
+
+    const videoUrl = document.getElementById('video-url').value;
+    const videoMaxWidth = document.getElementById('video-max-width').value;
+    const videoRatio = document.getElementById('video-ratio').value;
+
+    const buttonText = document.getElementById('button-text').value;
+    const buttonColor = document.getElementById('button-color').value;
+    const buttonRadius = document.getElementById('button-radius').value;
+    const buttonFont = document.getElementById('button-font').value;
+    const buttonFontSize = document.getElementById('button-font-size').value;
+
+    const bodyText = document.getElementById('body-text').value;
+    const bodyBg = document.getElementById('body-bg').value;
+    const bodyFont = document.getElementById('body-font').value;
+    const bodyFontSize = document.getElementById('body-font-size').value;
+    const bodyRadius = document.getElementById('body-radius').value;
+
+    const html = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${headline}</title>
+<style>
+body {
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+    color: white;
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('${bgUrl}') no-repeat center center fixed;
+    background-size: cover;
+}
+h1 {
+    font-family: ${headlineFont};
+    font-size: ${headlineSize}px;
+}
+p.sub {
+    font-family: ${subheadlineFont};
+    font-size: ${subheadlineSize}px;
+}
+.video-container {
+    max-width: ${videoMaxWidth}px;
+    margin: 10px auto;
+    aspect-ratio: ${videoRatio};
+    position: relative;
+}
+.video-container iframe {
+    width: 100%;
+    height: 100%;
+}
+.btn {
+    display: inline-block;
+    background: ${buttonColor};
+    color: white;
+    padding: 12px 25px;
+    border-radius: ${buttonRadius}px;
+    font-family: ${buttonFont};
+    font-size: ${buttonFontSize}px;
+    text-decoration: none;
+    font-weight: bold;
+}
+.yellow-box {
+    background: ${bodyBg};
+    color: black;
+    font-family: ${bodyFont};
+    font-size: ${bodyFontSize}px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 900px;
+    border: 5px solid black;
+    border-radius: ${bodyRadius}px;
+    text-align: left;
+}
+</style>
+</head>
+<body>
+<h1>${headline}</h1>
+<p class="sub">${subheadline}</p>
+<div class="video-container">
+<iframe src="${videoUrl}" frameborder="0" allowfullscreen></iframe>
+</div>
+<a href="#" class="btn">${buttonText}</a>
+<div class="yellow-box">${bodyText}</div>
+</body>
+</html>`;
+
+    document.getElementById('page-content').innerHTML = html;
+    document.getElementById('html-output').textContent = html;
+
+    // Atualizar fundo da página de preview ao vivo
+    document.body.style.backgroundImage = `url('${bgUrl}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center center';
+    document.body.style.backgroundAttachment = 'fixed';
+}
+
+document.querySelectorAll('#editor-panel input, #editor-panel textarea, #editor-panel select').forEach(el => {
+    el.addEventListener('input', updatePage);
+});
+
+function copyCode() {
+    const code = document.getElementById('html-output').textContent;
+    navigator.clipboard.writeText(code);
+    alert('HTML copiado com sucesso!');
+}
+
+updatePage();
+</script>
+
+</body>
+</html>
